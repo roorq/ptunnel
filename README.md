@@ -1,7 +1,5 @@
 # 🚇 ptunnel
 
-🇬🇧 **English** · 🇵🇱 [Polski](README.pl.md)
-
 A PowerShell script for Windows 11 that sets up SSH tunnels with `plink.exe`
 (PuTTY). The list of servers, IP addresses and ports lives in a separate file,
 `ptunnel.csv`, so you never have to edit the script itself.
