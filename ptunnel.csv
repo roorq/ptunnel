@@ -1,0 +1,21 @@
+﻿# Konfiguracja tuneli SSH dla ptunnel.ps1  (separator: średnik)
+#
+#   Nazwa       - dowolna etykieta tunelu
+#   SshHost     - adres serwera SSH (bramki), przez który idzie tunel
+#   SshPort     - port SSH (puste = 22)
+#   Uzytkownik  - login SSH
+#   Klucz       - ścieżka do klucza .ppk (puste = klucz z Pageanta)
+#   HostKey     - odcisk klucza serwera, np. SHA256:abc... (puste = musi być już zaakceptowany w PuTTY)
+#   Typ         - L = przekierowanie portu lokalnego, D = dynamiczny SOCKS proxy
+#   LokalnyPort - port na tym komputerze (nasłuch na 127.0.0.1)
+#   ZdalnyHost  - adres docelowy widziany z serwera SSH (dla D zostaw puste)
+#   ZdalnyPort  - port docelowy (dla D zostaw puste)
+#
+# Wiersze z tym samym SshHost/SshPort/Uzytkownik/Klucz/HostKey idą JEDNYM połączeniem plink.
+# Linie zaczynające się od # są pomijane.
+
+Nazwa;SshHost;SshPort;Uzytkownik;Klucz;HostKey;Typ;LokalnyPort;ZdalnyHost;ZdalnyPort
+baza-prod;bastion.example.com;22;user;C:\klucze\user.ppk;;L;15432;10.0.0.15;5432
+rdp-serwer;bastion.example.com;22;user;C:\klucze\user.ppk;;L;13389;10.0.0.20;3389
+socks;bastion.example.com;22;user;C:\klucze\user.ppk;;D;1080;;
+www-test;192.168.1.50;2222;admin;;;L;8080;127.0.0.1;80
