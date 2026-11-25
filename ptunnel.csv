@@ -13,9 +13,14 @@
 #
 # Wiersze z tym samym SshHost/SshPort/Uzytkownik/Klucz/HostKey idą JEDNYM połączeniem plink.
 # Linie zaczynające się od # są pomijane.
+#
+# Przykłady (skopiuj pod nagłówek i usuń # na początku):
+#
+#   baza-prod;bastion.example.com;22;user;C:\klucze\user.ppk;;L;15432;10.0.0.15;5432
+#   rdp-serwer;bastion.example.com;22;user;C:\klucze\user.ppk;;L;13389;10.0.0.20;3389
+#   socks;bastion.example.com;22;user;C:\klucze\user.ppk;;D;1080;;
+#   www-test;192.168.1.50;2222;admin;;;L;8080;127.0.0.1;80
+#
+# Nagłówek poniżej musi zostać - tunele dopisuj pod nim.
 
 Nazwa;SshHost;SshPort;Uzytkownik;Klucz;HostKey;Typ;LokalnyPort;ZdalnyHost;ZdalnyPort
-baza-prod;bastion.example.com;22;user;C:\klucze\user.ppk;;L;15432;10.0.0.15;5432
-rdp-serwer;bastion.example.com;22;user;C:\klucze\user.ppk;;L;13389;10.0.0.20;3389
-socks;bastion.example.com;22;user;C:\klucze\user.ppk;;D;1080;;
-www-test;192.168.1.50;2222;admin;;;L;8080;127.0.0.1;80

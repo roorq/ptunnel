@@ -27,8 +27,9 @@ param(
     [ValidateSet('start', 'stop', 'restart', 'status')]
     [string]$Akcja = 'start',
 
-    # Plik z listą tuneli
-    [string]$Plik = (Join-Path $PSScriptRoot 'ptunnel.csv'),
+    # Plik z listą tuneli (puste = ptunnel.csv obok skryptu)
+    # Uwaga: bez $PSScriptRoot tutaj - w Windows PowerShell bywa pusty w domyślnych wartościach param()
+    [string]$Plik,
 
     # Ścieżka do plink.exe (domyślnie: katalog skryptu, PATH, Program Files)
     [string]$Plink,
@@ -41,9 +42,17 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$StanPlik       = Join-Path $PSScriptRoot 'ptunnel.state.json'
-$LogDir         = Join-Path $PSScriptRoot 'logs'
-$UstawieniaPlik = Join-Path $PSScriptRoot 'ptunnel.ini'
+
+# Katalog skryptu - z zapasowymi metodami, bo $PSScriptRoot nie zawsze jest ustawiony
+$ScriptDir = $PSScriptRoot
+if (-not $ScriptDir -and $MyInvocation.MyCommand.Path) { $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path }
+if (-not $ScriptDir) { $ScriptDir = (Get-Location).Path }
+
+if (-not $Plik) { $Plik = Join-Path $ScriptDir 'ptunnel.csv' }
+
+$StanPlik       = Join-Path $ScriptDir 'ptunnel.state.json'
+$LogDir         = Join-Path $ScriptDir 'logs'
+$UstawieniaPlik = Join-Path $ScriptDir 'ptunnel.ini'
 $ParametryCLI   = $PSBoundParameters
 
 # ---------------------------------------------------------------- pomocnicze
@@ -53,7 +62,7 @@ function Write-Info([string]$msg, [string]$color = 'Gray') { Write-Host $msg -Fo
 # Ścieżka względna -> względem katalogu skryptu; rozwija też %ZMIENNE% środowiskowe
 function Resolve-ScriptPath([string]$p) {
     $p = [Environment]::ExpandEnvironmentVariables($p)
-    if (-not [IO.Path]::IsPathRooted($p)) { $p = Join-Path $PSScriptRoot $p }
+    if (-not [IO.Path]::IsPathRooted($p)) { $p = Join-Path $ScriptDir $p }
     return $p
 }
 
@@ -98,7 +107,7 @@ function Get-PlinkPath {
         throw "Nie znaleziono plink.exe pod wskazaną ścieżką: $Plink (sprawdź Plink w ptunnel.ini lub parametr -Plink)"
     }
     $kandydaci = @(
-        (Join-Path $PSScriptRoot 'plink.exe'),
+        (Join-Path $ScriptDir 'plink.exe'),
         (Get-Command plink.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -First 1),
         (Join-Path $env:ProgramFiles 'PuTTY\plink.exe'),
         (Join-Path ${env:ProgramFiles(x86)} 'PuTTY\plink.exe')
@@ -126,9 +135,12 @@ function Read-Tunnels([string]$Path) {
 
     $linie = Get-Content -Path $Path -Encoding UTF8 |
              Where-Object { $_.Trim() -and -not $_.TrimStart().StartsWith('#') }
-    if (-not $linie) { throw "Plik $Path nie zawiera żadnych tuneli." }
+    if (-not $linie) { throw "Plik $Path nie zawiera nagłówka ani tuneli." }
 
     $wiersze = @($linie | ConvertFrom-Csv -Delimiter ';')
+    if ($wiersze.Count -eq 0) {
+        throw "Plik $Path nie zawiera żadnych tuneli - dopisz je pod nagłówkiem (przykłady są w komentarzach na górze pliku)."
+    }
     $wynik = @()
     $nr = 1  # nr wiersza danych (bez nagłówka i komentarzy)
 
@@ -165,7 +177,7 @@ function Read-Tunnels([string]$Path) {
 
         if ($t.Klucz) {
             $k = $t.Klucz
-            if (-not [IO.Path]::IsPathRooted($k)) { $k = Join-Path $PSScriptRoot $k }
+            if (-not [IO.Path]::IsPathRooted($k)) { $k = Join-Path $ScriptDir $k }
             if (-not (Test-Path $k)) { throw "Wiersz ${nr} ($($t.Nazwa)): nie znaleziono klucza '$($t.Klucz)'." }
             $t.Klucz = (Resolve-Path $k).Path
         }
